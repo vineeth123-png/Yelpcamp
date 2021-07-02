@@ -26,6 +26,22 @@ module.exports.createCampground = async (req, res) => {
 	res.redirect(`/campgrounds/${campground._id}`);
 };
 
+module.exports.updateCampground = async (req, res) => {
+	const { id } = req.params;
+	//const campground = req.body.campground;
+	const campground = await Campground.findByIdAndUpdate(id, {
+		...req.body.campground,
+	});
+	const imgs = req.files.map((f) => ({
+		url: f.path,
+		filename: f.filename,
+	}));
+	campground.images.push(...imgs);
+	await campground.save();
+	req.flash("success", "successfully updated campground");
+	res.redirect(`/campgrounds/${campground._id}`);
+};
+
 module.exports.showCampground = async (req, res) => {
 	const id = req.params.id;
 	//if(!id) throw new ExpressError('Invalid id', 400);
@@ -53,16 +69,6 @@ module.exports.renderShowForm = async (req, res) => {
 		return res.redirect("/campgrounds");
 	}
 	res.render("campgrounds/edit", { campground });
-};
-
-module.exports.updateCampground = async (req, res) => {
-	const { id } = req.params;
-	//const campground = req.body.campground;
-	const campground = await Campground.findByIdAndUpdate(id, {
-		...req.body.campground,
-	});
-	req.flash("success", "successfully updated campground");
-	res.redirect(`/campgrounds/${campground._id}`);
 };
 
 module.exports.deleteCamprgound = async (req, res) => {
